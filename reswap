@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Endrer størrelse på swap fil med størrelsen som blir gitt som første parameter i GB
+
+err () {
+  echo "Skriptet tar kun mot et argument i form av et heltall mellom 1 og 64."
+  echo "Eksempel: [reswap 4]"
+}
+
+if [ $# -eq 1  ]
+  then
+    if [ $1 -ge 1 ] && [ $1 -le 64 ]
+      then
+        sudo swapoff -a
+        sudo rm /swapfile
+        sudo fallocate -l $1G /swapfile
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        sudo swapon --show
+    else
+      err
+    fi
+else
+    err
+fi
