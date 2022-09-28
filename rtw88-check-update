@@ -1,1 +1,45 @@
+#!/bin/bash
 
+# Sjekker om kjernen har oppdatert. Skal varsle bruker om at RTW88 driveren må oppdateres
+# dersom kjernen har blitt oppdatert
+
+
+FILE="$HOME/.local/share/rtw88-checker/version.txt"
+GIT_DIRECTORY="$HOME/.local/share/rtw88-checker/rtw88"
+OLD_VERSION=`cat $FILE`
+NEW_VERSION=`uname -a`
+
+
+# Lager fil hvis den ikke finnes
+if ! test -f "$FILE"; then
+    touch $FILE
+    chmod +x $FILE
+    uname -a > $FILE
+fi
+
+
+# Sjekker etter nye Git oppdateringer
+if [ -d "$GIT_DIRECTORY" ]; then
+    cd $GIT_DIRECTORY
+    git fetch origin
+	reslog=$(git log HEAD..origin/master --oneline)
+	if [[ "${reslog}" != "" ]] ; then
+		echo "Git oppdatering funnet."
+		notify-send "Ny oppdatering funnet for RTW88" "Kjør rtw88-update for å laste ned og installere oppdateringen"
+	else
+		echo "Ingen Git oppdateringer funnet."
+	fi
+else 
+    echo "$GIT_DIRECTORY finnes ikke. Har bruker installert RTW88?"
+    notify-send -u critical "Git mappe for driver ikke funnet" "Kjør rtw88-update for å laste ned og installere den"
+fi
+
+
+# Sjekker etter kjerneversjonsoppdateringer
+if [ "$OLD_VERSION" = "$NEW_VERSION" ]; then
+    echo "Linux kjerne har ikke oppdatert. Ingen grunn til å oppdatere RTW88."
+else
+    echo "Linux kjerne har oppdatert. RTW88 må oppdateres for å fungere."
+    uname -a > $FILE
+    notify-send -u critical "Linux kjerne har oppdatert" "Kjør 'rtw88-update' for å oppdatere driveren"
+fi
