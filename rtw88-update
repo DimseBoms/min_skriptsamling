@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Et skript som oppdaterer rtw88 driveren
+
+
+DIRECTORY="$HOME/.local/share/rtw88-checker"
+GIT_DIRECTORY="$HOME/.local/share/rtw88-checker/rtw88"
+BACKUP_DIRECTORY="$HOME/.local/share/rtw88-checker/rtw88.old"
+
+
+if [ -d "$GIT_DIRECTORY" ]; then
+    echo "$GIT_DIRECTORY finnes. Henter nyeste oppdateringer"
+    rm -rf $BACKUP_DIRECTORY
+    cp -rf $GIT_DIRECTORY $BACKUP_DIRECTORY
+    cd $GIT_DIRECTORY
+    git pull
+    make
+    sudo make install
+else 
+    echo "$GIT_DIRECTORY finnes ikke. Kloner nytt prosjekt"
+    mkdir -p $GIT_DIRECTORY
+    cd $DIRECTORY
+    git clone https://github.com/lwfinger/rtw88
+    cd $GIT_DIRECTORY
+    make
+    sudo make install
+fi
