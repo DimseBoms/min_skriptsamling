@@ -55,4 +55,4 @@ do
         systemctl restart prisjeger-backend.service
     fi
     sleep $UPDATE_INTERVAL
-d
+done
