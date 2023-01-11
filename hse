@@ -1,0 +1,10 @@
+#!/bin/bash 
+
+# Søker gjennom .bash_history for den innloggede brukeren 
+
+if [ $# -ge 1  ]
+  then
+    cat ~/.bash_history | grep $1
+else           
+    cat ~/.bash_history      
+fi
