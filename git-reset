@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Nullstiller alle endringer i git og henter nyeste fra repo
+
+git stash --include-untracked
+git reset --hard
+git clean -fd
+git config pull.rebase true
+git pull
+
