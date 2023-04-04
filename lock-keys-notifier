@@ -1,0 +1,35 @@
+#!/bin/bash
+
+caps="off"
+num="off"
+expiry_time=2000  # in milliseconds
+
+while true
+do
+    caps_now=$(xset q | grep "Caps Lock:" | awk '{print $4}')
+    num_now=$(xset q | grep "Num Lock:" | awk '{print $8}')
+
+    if [ "$caps_now" != "$caps" ]
+    then
+        caps=$caps_now
+        if [ "$caps" = "on" ]
+        then
+            notify-send -t $expiry_time "Caps Lock is On"
+        else
+            notify-send -t $expiry_time "Caps Lock is Off"
+        fi
+    fi
+
+    if [ "$num_now" != "$num" ]
+    then
+        num=$num_now
+        if [ "$num" = "on" ]
+        then
+            notify-send -t $expiry_time "Num Lock is On"
+        else
+            notify-send -t $expiry_time "Num Lock is Off"
+        fi
+    fi
+
+    sleep 1
+done
