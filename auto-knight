@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# A script to automatically change the global theme of KDE Plasma based on the
+# time of day. It utilizes KDE's built-in night color feature to determine
+# whether it is day or night. If the current color temperature deviates from
+# the default temperature it is considered night. Otherwise it is considered
+# day. The script is intended to be run on startup and then to be left running
+
+# Author: Dmitriy Safiullin
+# Date: 2023.12.30
+
+
+light_theme="org.kde.breeze.desktop"
+dark_theme="org.kde.breezedark.desktop"
+change_theme_command="plasma-apply-lookandfeel -a"
+
+default_temp=6500
+last_theme_file="$HOME/.config/auto-knight/last_theme"
+
+interface="org.freedesktop.DBus.Properties"
+member="PropertiesChanged"
+path="/ColorCorrect"
+arg0="org.kde.kwin.ColorCorrect"
+
+# Create the last theme file if it doesn't exist
+if [[ ! -f "$last_theme_file" ]]; then
+    mkdir -p "$(dirname "$last_theme_file")"
+    touch "$last_theme_file"
+fi
+
+# Detect signal from KWin when the color temperature changes
+dbus-monitor --session "type='signal',interface='$interface',member='$member',path='$path',arg0='$arg0'" |
+    grep --line-buffered -A 1 "currentTemperature" |
+    while read -r line; do
+        # Check if the current color temperature is the default temperature. Change the theme
+        # unless the current theme has already been set to the correct one.
+        if [[ "$line" == *"$default_temp"* ]]; then
+            if [[ "$(cat "$last_theme_file")" != "$light_theme" ]]; then
+                $change_theme_command "$light_theme"
+                echo "$light_theme" > "$last_theme_file"
+            fi
+        else
+            if [[ "$(cat "$last_theme_file")" != "$dark_theme" ]]; then
+                $change_theme_command "$dark_theme"
+                echo "$dark_theme" > "$last_theme_file"
+            fi
+        fi
+    done
