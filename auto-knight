@@ -22,10 +22,17 @@ member="PropertiesChanged"
 path="/ColorCorrect"
 arg0="org.kde.kwin.ColorCorrect"
 
-# Create the last theme file if it doesn't exist
-if [[ ! -f "$last_theme_file" ]]; then
-    mkdir -p "$(dirname "$last_theme_file")"
-    touch "$last_theme_file"
+function set_theme() {
+    # Set the theme and save it to the last theme file
+    $change_theme_command "$1"
+    echo "$1" > "$last_theme_file"
+}
+
+# Initialize the theme from KWins current color temperature
+if [[ "$(qdbus-qt5 org.kde.KWin /ColorCorrect org.kde.kwin.ColorCorrect.currentTemperature)" == "$default_temp" ]]; then
+    set_theme "$light_theme"
+else
+    set_theme "$dark_theme"
 fi
 
 # Detect signal from KWin when the color temperature changes
@@ -36,13 +43,11 @@ dbus-monitor --session "type='signal',interface='$interface',member='$member',pa
         # unless the current theme has already been set to the correct one.
         if [[ "$line" == *"$default_temp"* ]]; then
             if [[ "$(cat "$last_theme_file")" != "$light_theme" ]]; then
-                $change_theme_command "$light_theme"
-                echo "$light_theme" > "$last_theme_file"
+                set_theme "$light_theme"
             fi
         else
             if [[ "$(cat "$last_theme_file")" != "$dark_theme" ]]; then
-                $change_theme_command "$dark_theme"
-                echo "$dark_theme" > "$last_theme_file"
+                set_theme "$dark_theme"
             fi
         fi
     done
